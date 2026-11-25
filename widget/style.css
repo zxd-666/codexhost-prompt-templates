@@ -1,0 +1,111 @@
+:host {
+  display: none !important;
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  z-index: auto !important;
+  flex: none;
+  pointer-events: none !important;
+}
+:host([data-pt-docked]) { display: inline-flex !important; }
+.pt-trigger, .pt-menu { pointer-events: auto; }
+.pt-trigger {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cx-page-text-muted, CanvasText);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+.pt-trigger:hover, .pt-trigger[aria-expanded="true"] {
+  background: var(--cx-page-surface, Canvas);
+  color: var(--cx-page-text, CanvasText);
+}
+.pt-icon {
+  width: 13px;
+  height: 15px;
+  display: inline-grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+}
+.pt-icon::before, .pt-icon::after {
+  content: "";
+  width: 6px;
+  height: 1px;
+  background: currentColor;
+}
+.pt-menu {
+  position: fixed;
+  inset: var(--pt-top, auto) auto var(--pt-bottom, auto) var(--pt-left, 8px);
+  box-sizing: border-box;
+  width: var(--pt-width, 320px);
+  max-height: min(320px, var(--pt-available-height, 100dvh));
+  margin: 0;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid var(--cx-page-border, GrayText);
+  border-radius: var(--cx-page-radius, 12px);
+  background: var(--cx-page-bg, Canvas);
+  color: var(--cx-page-text, CanvasText);
+  box-shadow: 0 12px 35px #0003;
+  font: 13px/1.45 system-ui, sans-serif;
+  text-align: start;
+}
+.pt-menu:popover-open { display: flex; flex-direction: column; }
+.pt-menu input {
+  box-sizing: border-box;
+  flex: none;
+  width: 100%;
+  min-height: 35px;
+  padding: 6px 9px;
+  border: 1px solid var(--cx-page-border, GrayText);
+  border-radius: 7px;
+  background: var(--cx-page-surface, Canvas);
+  color: inherit;
+  font: inherit;
+}
+.pt-trigger:focus-visible, .pt-menu :is(button, input):focus-visible {
+  outline: 2px solid var(--cx-page-accent, Highlight);
+  outline-offset: -2px;
+}
+.pt-message { color: var(--cx-page-text-muted, GrayText); margin: 10px 4px 2px; }
+.pt-message:empty { display: none; }
+.pt-results {
+  min-height: 0;
+  margin: 5px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden auto;
+  overscroll-behavior-y: contain;
+}
+.pt-results:empty { display: none; }
+.pt-results button {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 32px;
+  padding: 7px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.pt-results button:hover, .pt-results button:focus-visible { background: var(--cx-page-surface, Canvas); }
+@media (pointer: coarse) {
+  .pt-trigger { width: 40px; height: 40px; }
+  .pt-menu input { font-size: 16px; }
+}

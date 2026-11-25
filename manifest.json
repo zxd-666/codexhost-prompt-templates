@@ -1,0 +1,46 @@
+{
+  "manifestVersion": 2,
+  "id": "prompt-templates",
+  "version": "1.1.1",
+  "author": "zxd-666",
+  "repository": "https://github.com/zxd-666/codexhost-prompt-templates",
+  "name": {
+    "en": "Prompt Templates",
+    "zh-CN": "提示词模板"
+  },
+  "description": {
+    "en": "Search and insert reusable prompts from the bottom-left of the chat composer.",
+    "zh-CN": "在对话输入框左下角搜索常用提示词，一键插入草稿。"
+  },
+  "details": {
+    "en": "### Reuse prompts in chat\n\n- Click **Prompt templates** in the bottom-left toolbar to search and insert a template.\n- Drag templates in the management page to change their order in the picker. Create, edit, or delete custom templates and toggle built-ins.\n- Desktop and Web share the same library when connected to the same Host.",
+    "zh-CN": "### 在对话中复用提示词\n\n- 点击输入框左下角的 **提示词模板**，搜索并插入模板。\n- 在管理页拖拽模板可调整弹窗里的顺序。也可新增、编辑、删除自定义模板或隐藏内置模板。\n- 连接同一 Host 的 Desktop 和 Web 共享模板库。"
+  },
+  "categories": [
+    "workflow",
+    "tools"
+  ],
+  "page": {
+    "apiVersion": 1,
+    "entry": "page/index.mjs",
+    "style": "page/style.css",
+    "title": {
+      "en": "Prompt Templates",
+      "zh-CN": "提示词模板"
+    }
+  },
+  "widget": {
+    "apiVersion": 1,
+    "entry": "widget/index.mjs",
+    "style": "widget/style.css"
+  },
+  "icon": "assets/icon.png",
+  "backend": {
+    "apiVersion": 1,
+    "entry": "backend/index.mjs"
+  },
+  "screenshots": [
+    "assets/composer.png",
+    "assets/library.png"
+  ]
+}
