@@ -1,4 +1,4 @@
-import { language, templateList, templateTags, watchSettings } from "../shared/library.mjs";
+import { language, newTemplateId, templateList, templateTags, watchSettings } from "../shared/library.mjs";
 import { bindReorder } from "./reorder.mjs";
 
 const copy = {
@@ -284,9 +284,7 @@ export function mount(root, api) {
       render();
       return;
     }
-    const randomId = () => Array.from(globalThis.crypto.getRandomValues(new Uint32Array(4)),
-      (part) => part.toString(16).padStart(8, "0")).join("");
-    const template = { id: previous?.id ?? `custom:${randomId()}`, title, tags, body };
+    const template = { id: previous?.id ?? newTemplateId(), title, tags, body };
     void write({ action: "save", template, ...(previous && { previous }) }, "saved", closeForm);
   });
 

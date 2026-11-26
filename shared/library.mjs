@@ -18,6 +18,12 @@ const presets = [
 
 export const language = (locale) => /^zh(?:-|$)/i.test(locale) ? "zh" : "en";
 
+export function newTemplateId() {
+  const hex = Array.from(globalThis.crypto.getRandomValues(new Uint32Array(4)),
+    (part) => part.toString(16).padStart(8, "0")).join("");
+  return `custom:${hex}`;
+}
+
 export function customTemplates(settings) {
   if (!Array.isArray(settings.templates)) return [];
   return settings.templates.filter((item) => item && typeof item.id === "string" &&

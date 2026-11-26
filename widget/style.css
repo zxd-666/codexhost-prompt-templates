@@ -60,7 +60,10 @@
   text-align: start;
 }
 .pt-menu:popover-open { display: flex; flex-direction: column; }
-.pt-menu input {
+.pt-menu [hidden] { display: none !important; }
+.pt-picker { display: flex; flex-direction: column; min-height: 0; }
+.pt-picker-bar { display: grid; grid-template-columns: minmax(0, 1fr) 35px; gap: 6px; flex: none; }
+.pt-menu :is(input, textarea) {
   box-sizing: border-box;
   flex: none;
   width: 100%;
@@ -72,12 +75,38 @@
   color: inherit;
   font: inherit;
 }
-.pt-trigger:focus-visible, .pt-menu :is(button, input):focus-visible {
+.pt-menu textarea { min-height: 64px; resize: vertical; }
+.pt-new, .pt-form-actions button {
+  border: 1px solid var(--cx-page-border, GrayText);
+  border-radius: 7px;
+  background: var(--cx-page-bg, Canvas);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+.pt-new { display: grid; place-items: center; padding: 0; font-size: 21px; line-height: 1; }
+.pt-new:hover:not(:disabled), .pt-form-actions button:hover:not(:disabled) { background: var(--cx-page-surface, Canvas); }
+.pt-menu button:disabled { opacity: .55; cursor: default; }
+.pt-trigger:focus-visible, .pt-menu :is(button, input, textarea):focus-visible {
   outline: 2px solid var(--cx-page-accent, Highlight);
   outline-offset: -2px;
 }
-.pt-message { color: var(--cx-page-text-muted, GrayText); margin: 10px 4px 2px; }
-.pt-message:empty { display: none; }
+.pt-message, .pt-form-message { color: var(--cx-page-text-muted, GrayText); margin: 10px 4px 2px; }
+.pt-message:empty, .pt-form-message:empty { display: none; }
+.pt-create {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  padding: 2px;
+  overflow: hidden auto;
+  overscroll-behavior-y: contain;
+}
+.pt-create h2 { margin: 0; font-size: 15px; }
+.pt-create label { display: grid; gap: 3px; }
+.pt-form-message { margin: 0; color: var(--cx-page-danger, GrayText); }
+.pt-form-actions { display: flex; gap: 6px; }
+.pt-form-actions button { min-height: 32px; padding: 4px 12px; }
+.pt-form-actions button[type="submit"] { border-color: var(--cx-page-accent, Highlight); color: var(--cx-page-accent, Highlight); }
 .pt-results {
   min-height: 0;
   margin: 5px 0 0;
@@ -107,5 +136,5 @@
 .pt-results button:hover, .pt-results button:focus-visible { background: var(--cx-page-surface, Canvas); }
 @media (pointer: coarse) {
   .pt-trigger { width: 40px; height: 40px; }
-  .pt-menu input { font-size: 16px; }
+  .pt-menu :is(input, textarea) { font-size: 16px; }
 }
