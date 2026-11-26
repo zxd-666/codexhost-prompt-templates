@@ -11,11 +11,11 @@ function matches(a, b) {
   return a && b && a.id === b.id && a.title === b.title && a.tags === b.tags && a.body === b.body;
 }
 
-function reorder(settings, { fromId, toId, position, locale, query }) {
-  if (typeof locale !== "string" || typeof query !== "string" ||
+function reorder(settings, { fromId, toId, position, locale, query, tag = "" }) {
+  if (typeof locale !== "string" || typeof query !== "string" || typeof tag !== "string" ||
       (position !== "before" && position !== "after")) throw new Error("Invalid template order");
 
-  const current = templateList(settings, locale, query).map(({ id }) => id);
+  const current = templateList(settings, locale, query, tag).map(({ id }) => id);
   if (!current.includes(fromId) || !current.includes(toId) || fromId === toId) return;
   const moved = current.filter((id) => id !== fromId);
   const target = moved.indexOf(toId) + (position === "after" ? 1 : 0);

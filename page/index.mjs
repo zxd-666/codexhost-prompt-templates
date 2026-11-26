@@ -1,4 +1,4 @@
-import { language, templateList, watchSettings } from "../shared/library.mjs";
+import { language, templateList, templateTags, watchSettings } from "../shared/library.mjs";
 import { bindReorder } from "./reorder.mjs";
 
 const copy = {
@@ -11,6 +11,7 @@ const copy = {
     conflict: "这条模板已在其他页面修改，请重新打开后编辑。",
     move: "调整顺序", moveHint: "拖动排序，或用上下方向键移动", orderSaved: "顺序已保存",
     orderConflict: "列表已更新，请重新拖动。",
+    tagFilters: "按标签筛选", allTags: "全部模板", tagInput: "多个标签用逗号分隔",
   },
   en: {
     title: "Prompt templates", new: "New template", search: "Search templates", fields: "Name, tags, or text",
@@ -21,6 +22,7 @@ const copy = {
     conflict: "This template changed in another window. Reopen it before editing.",
     move: "Reorder", moveHint: "Drag to reorder, or use the Up and Down arrow keys", orderSaved: "Order saved",
     orderConflict: "The list changed. Move the template again.",
+    tagFilters: "Filter by tag", allTags: "All templates", tagInput: "Separate multiple tags with commas",
   },
 };
 
@@ -33,6 +35,7 @@ export function mount(root, api) {
   let editing;
   let pendingDelete;
   let pendingPresets;
+  let activeTag = "";
   let notice = "loading";
   const t = (key) => copy[language(api.locale)][key];
   const main = doc.createElement("section");
@@ -43,6 +46,7 @@ export function mount(root, api) {
       <input type="search" data-search>
       <label><input type="checkbox" data-presets><span></span></label>
     </div>
+    <div class="pt-tag-filters" role="group" hidden></div>
     <form hidden>
       <label><span data-label="name"></span><input name="title" maxlength="100" required></label>
       <label><span data-label="tags"></span><input name="tags" maxlength="180"></label>
@@ -59,6 +63,7 @@ export function mount(root, api) {
   const find = (selector) => main.querySelector(selector);
   const add = find("[data-new]");
   const search = find("[data-search]");
+  const tagFilters = find(".pt-tag-filters");
   const presets = find("[data-presets]");
   const form = find("form");
   const list = find(".pt-list");
@@ -80,12 +85,44 @@ export function mount(root, api) {
     return control;
   }
 
+  function tagButton(key, label) {
+    const control = doc.createElement("button");
+    control.type = "button";
+    control.className = "pt-tag";
+    control.dataset.templateTag = key;
+    control.textContent = label;
+    control.title = label;
+    control.setAttribute("aria-pressed", String(key === activeTag));
+    return control;
+  }
+
+  function renderTagFilters() {
+    const tags = new Map();
+    for (const template of settings ? templateList(settings, api.locale) : []) {
+      for (const { key, label } of templateTags(template.tags)) {
+        if (!tags.has(key)) tags.set(key, label);
+      }
+    }
+    if (!tags.has(activeTag)) activeTag = "";
+    const focused = tagFilters.querySelector("button:focus")?.dataset.templateTag;
+    tagFilters.hidden = !tags.size;
+    tagFilters.setAttribute("aria-label", t("tagFilters"));
+    const sorted = [...tags].sort((a, b) => a[1].localeCompare(b[1], language(api.locale)));
+    const controls = [tagButton("", t("allTags")), ...sorted.map(([key, label]) => tagButton(key, label))];
+    const fragment = doc.createDocumentFragment();
+    if (tags.size) for (const control of controls) fragment.append(control);
+    tagFilters.replaceChildren(fragment);
+    if (tags.size && focused !== undefined) {
+      (controls.find((control) => control.dataset.templateTag === focused) ?? controls[0]).focus();
+    }
+  }
+
   function renderList() {
     const focused = list.querySelector("[data-reorder-handle]:focus")?.closest("li").dataset.templateId;
     cancelReorder();
     list.replaceChildren();
     if (!settings) return;
-    const templates = templateList(settings, api.locale, search.value);
+    const templates = templateList(settings, api.locale, search.value, activeTag);
     if (!templates.length) {
       const empty = doc.createElement("li");
       empty.className = "pt-empty";
@@ -107,11 +144,22 @@ export function mount(root, api) {
       text.className = "pt-template";
       const title = doc.createElement("h2");
       title.textContent = template.title;
-      const meta = doc.createElement("small");
-      meta.textContent = [template.preset && t("builtin"), template.tags].filter(Boolean).join(" · ");
       const preview = doc.createElement("p");
       preview.textContent = template.body;
-      text.append(title, meta, preview);
+      text.append(title);
+      const tags = templateTags(template.tags);
+      if (template.preset || tags.length) {
+        const meta = doc.createElement("div");
+        meta.className = "pt-template-tags";
+        if (template.preset) {
+          const builtin = doc.createElement("small");
+          builtin.textContent = t("builtin");
+          meta.append(builtin);
+        }
+        meta.append(...tags.map(({ key, label }) => tagButton(key, label)));
+        text.append(meta);
+      }
+      text.append(preview);
       row.append(handle, text);
       if (!template.preset) {
         const actions = doc.createElement("div");
@@ -138,6 +186,7 @@ export function mount(root, api) {
     add.textContent = t("new");
     search.placeholder = t("fields");
     search.setAttribute("aria-label", t("search"));
+    field("tags").placeholder = t("tagInput");
     find("[data-presets] + span").textContent = t("presets");
     for (const el of main.querySelectorAll("[data-label]")) el.textContent = t(el.dataset.label);
     add.disabled = !settings || writing;
@@ -145,6 +194,7 @@ export function mount(root, api) {
     presets.checked = pendingPresets ?? (settings?.showPresets !== false);
     for (const el of form.elements) el.disabled = writing;
     status.textContent = notice ? t(notice) : "";
+    renderTagFilters();
     renderList();
   }
 
@@ -202,11 +252,21 @@ export function mount(root, api) {
   }
 
   async function moveTemplate(move, keyboard) {
-    await write({ action: "reorder", ...move, query: search.value, locale: api.locale }, "orderSaved");
+    await write({ action: "reorder", ...move, query: search.value, tag: activeTag, locale: api.locale }, "orderSaved");
     if (keyboard && !api.signal.aborted) focusHandle(move.fromId);
   }
 
   listen(add, "click", () => openForm());
+  listen(main, "click", (event) => {
+    const control = event.target.closest("button[data-template-tag]");
+    if (!control) return;
+    activeTag = control.dataset.templateTag;
+    for (const tag of tagFilters.children) {
+      tag.setAttribute("aria-pressed", String(tag.dataset.templateTag === activeTag));
+    }
+    renderList();
+    if (!tagFilters.contains(control)) tagFilters.querySelector('[aria-pressed="true"]')?.focus();
+  });
   listen(search, "input", renderList);
   listen(presets, "change", () => {
     pendingPresets = presets.checked;

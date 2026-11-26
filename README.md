@@ -6,9 +6,9 @@
 
 ## 安装
 
-需要支持 `manifestVersion: 2`、`page`、`widget` 和 `backend` 的 CodexHost。模板管理、拖拽排序和草稿插入已在 CodexHost `0.26.1` 的 Desktop 和 CH Web 环境验证。
+需要支持 `manifestVersion: 2`、`page`、`widget` 和 `backend` 的 CodexHost。标签筛选已在 CodexHost `0.27.0` 的 Desktop 和 CH Web 环境验证。
 
-从 [GitHub Release](https://github.com/zxd-666/codexhost-prompt-templates/releases/latest) 下载 `prompt-templates-1.1.1.zip`。
+从 [GitHub Release](https://github.com/zxd-666/codexhost-prompt-templates/releases/latest) 下载插件 ZIP。
 
 | 客户端 | 导入并启用 | 打开独立页面 |
 | --- | --- | --- |
@@ -22,10 +22,11 @@
 ## 使用
 
 - **搜索和插入**。结果只显示模板名称，支持按名称、标签或正文搜索。点选模板或按 `Enter` 插入草稿，按 `Esc` 关闭。已有文字会保留，发送使用宿主原有操作。
+- **标签筛选**。在管理页点击筛选栏或模板卡片上的标签，可查看该标签下的模板。搜索可以进一步缩小结果，点击「全部模板」清除标签筛选。编辑模板时，可用逗号分隔多个标签。
 - **管理和排序**。新增、编辑和删除自定义模板，也可隐藏内置模板。拖动模板左侧的六点手柄后松手即可保存顺序，聚焦手柄时也可用上下方向键移动。管理页和输入框弹窗使用同一顺序。
 - **双端共享**。连接同一个 CodexHost Host 的 Desktop 和 Web 共享模板。模板保存在该 Host 的插件数据中，共享后端通过 Host 的存储接口读写模板和排序。
 
-![模板管理页拖拽排序](assets/library.png)
+![模板管理页按标签筛选](assets/library.png)
 
 ## 打包
 

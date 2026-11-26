@@ -44,10 +44,22 @@ export function orderedTemplates(settings, locale) {
   return [...ordered, ...remaining.values()];
 }
 
-export function templateList(settings, locale, query = "") {
+export function templateTags(value) {
+  const tags = new Map();
+  for (const part of value.split(/[,，、;；·\r\n]+/u)) {
+    const label = part.trim();
+    if (!label) continue;
+    const key = label.toLowerCase().normalize("NFC");
+    if (!tags.has(key)) tags.set(key, { key, label });
+  }
+  return [...tags.values()];
+}
+
+export function templateList(settings, locale, query = "", tag = "") {
   const terms = query.trim().toLowerCase().split(/\s+/);
   return orderedTemplates(settings, locale).filter(({ title, tags, body, preset }) => {
     if (preset && settings.showPresets === false) return false;
+    if (tag && !templateTags(tags).some(({ key }) => key === tag)) return false;
     const haystack = `${title}\n${tags}\n${body}`.toLowerCase();
     return terms.every((term) => haystack.includes(term));
   });

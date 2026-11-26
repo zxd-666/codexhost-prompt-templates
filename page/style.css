@@ -30,6 +30,25 @@
 .pt-library :is(button, input, textarea):focus-visible { outline: 2px solid var(--cx-page-accent); outline-offset: 2px; }
 .pt-library button.pt-primary { border-color: var(--cx-page-accent); color: var(--cx-page-accent); }
 .pt-library button.pt-danger { color: var(--cx-page-danger); }
+.pt-tag-filters, .pt-template-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pt-tag-filters { margin-top: 12px; }
+.pt-template-tags { margin-top: 4px; }
+.pt-library button.pt-tag {
+  max-width: 100%;
+  min-height: 30px;
+  padding: 3px 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: var(--cx-page-text-muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.pt-template-tags button.pt-tag { min-height: 24px; padding: 1px 7px; font-size: 12px; }
+.pt-library button.pt-tag[aria-pressed="true"] {
+  border-color: var(--cx-page-accent);
+  background: color-mix(in srgb, var(--cx-page-accent) 10%, var(--cx-page-bg));
+  color: var(--cx-page-accent);
+}
 .pt-library form, .pt-list > li {
   border: 1px solid var(--cx-page-border);
   border-radius: var(--cx-page-radius, 10px);
@@ -79,7 +98,6 @@
 .pt-list > [data-drop-position="after"]::before { bottom: -5px; }
 .pt-list h2 { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
 .pt-list small, .pt-empty { color: var(--cx-page-text-muted); overflow-wrap: anywhere; }
-.pt-list small:empty { display: none; }
 .pt-list p {
   display: -webkit-box;
   margin: 5px 0 0;
