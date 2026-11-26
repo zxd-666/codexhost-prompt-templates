@@ -50,7 +50,8 @@ export function activate(ctx) {
           if (!validTemplate(template)) throw new Error("Invalid template");
           const templates = customTemplates(settings);
           const existing = templates.find(({ id }) => id === template.id);
-          if (!previous && existing) return matches(existing, template);
+          if (matches(existing, template)) return true;
+          if (!previous && existing) return false;
           if (previous && !matches(existing, previous)) return false;
           const next = existing ? templates.map((item) => item.id === template.id ? template : item) : [template, ...templates];
           const values = { ...settings, templates: next };
