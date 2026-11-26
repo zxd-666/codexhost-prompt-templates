@@ -30,6 +30,11 @@ export function customTemplates(settings) {
     typeof item.title === "string" && typeof item.tags === "string" && typeof item.body === "string");
 }
 
+// Two templates count as duplicates when their visible text matches, ignoring outer whitespace.
+export function templateKey({ title, tags, body }) {
+  return JSON.stringify([title.trim(), tags.trim(), body.replace(/\r\n?/g, "\n").trim()]);
+}
+
 export function orderedTemplates(settings, locale) {
   const builtIns = presets.map((item) => {
     const [title, tags, body] = item[language(locale)];

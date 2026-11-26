@@ -116,7 +116,8 @@
   overscroll-behavior-y: contain;
 }
 .pt-results:empty { display: none; }
-.pt-results li { display: flex; align-items: center; gap: 2px; }
+.pt-results li { display: flex; align-items: center; gap: 2px; border-radius: 7px; }
+.pt-results li:hover, .pt-results li:focus-within { background: color-mix(in srgb, currentColor 8%, transparent); }
 .pt-results button {
   box-sizing: border-box;
   border: 0;
@@ -148,7 +149,9 @@
   line-height: 1;
 }
 .pt-results .pt-result-action[data-action="send"] { color: var(--cx-page-accent, Highlight); }
-.pt-results button:hover, .pt-results button:focus-visible { background: var(--cx-page-surface, Canvas); }
+.pt-results .pt-result-action:hover, .pt-results .pt-result-action:focus-visible {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
 @media (pointer: coarse) {
   .pt-trigger { width: 40px; height: 40px; }
   .pt-menu :is(input, textarea) { font-size: 16px; }

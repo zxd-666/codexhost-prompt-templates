@@ -8,7 +8,8 @@
 }
 .pt-library *, .pt-library *::before, .pt-library *::after { box-sizing: border-box; }
 .pt-library [hidden] { display: none !important; }
-.pt-library header, .pt-filters, .pt-actions { display: flex; align-items: center; gap: 8px; }
+.pt-library header, .pt-header-actions, .pt-filters, .pt-actions { display: flex; align-items: center; gap: 8px; }
+.pt-header-actions { flex-wrap: wrap; }
 .pt-library header, .pt-filters { justify-content: space-between; flex-wrap: wrap; }
 .pt-library h1 { margin: 0; font-size: 25px; letter-spacing: -.025em; }
 .pt-filters { margin-top: 18px; }

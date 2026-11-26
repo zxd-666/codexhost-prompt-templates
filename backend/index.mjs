@@ -1,4 +1,4 @@
-import { customTemplates, orderedTemplates, templateList } from "../shared/library.mjs";
+import { customTemplates, orderedTemplates, templateKey, templateList } from "../shared/library.mjs";
 
 function validTemplate(template) {
   return template && typeof template.id === "string" && /^custom:[a-f0-9-]{32,36}$/.test(template.id) &&
@@ -71,6 +71,31 @@ export function activate(ctx) {
           }
           await ctx.writeSettings(values);
           return true;
+        }
+        case "import": {
+          const { templates } = request;
+          if (!Array.isArray(templates) || templates.length > 1000 || !templates.every(validTemplate)) {
+            throw new Error("Invalid templates");
+          }
+          const existing = customTemplates(settings);
+          const ids = new Set(existing.map(({ id }) => id));
+          const keys = new Set(existing.map(templateKey));
+          const added = [];
+          for (const { id, title, tags, body } of templates) {
+            const key = templateKey({ title, tags, body });
+            if (ids.has(id) || keys.has(key)) continue;
+            ids.add(id);
+            keys.add(key);
+            added.push({ id, title, tags, body });
+          }
+          if (added.length) {
+            const values = { ...settings, templates: [...added, ...existing] };
+            if (Array.isArray(settings.templateOrder)) {
+              values.templateOrder = [...added.map(({ id }) => id), ...settings.templateOrder];
+            }
+            await ctx.writeSettings(values);
+          }
+          return { added: added.length, skipped: templates.length - added.length };
         }
         default:
           throw new Error("Unknown template action");
