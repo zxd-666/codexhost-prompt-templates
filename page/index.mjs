@@ -1,5 +1,6 @@
 import { language, newTemplateId, templateList, templateTags, watchSettings } from "../shared/library.mjs";
 import { bindReorder } from "./reorder.mjs";
+import { keepLineBreaksOnPaste } from "../shared/paste.mjs";
 
 const copy = {
   zh: {
@@ -273,6 +274,7 @@ export function mount(root, api) {
     void write({ action: "presets", showPresets: pendingPresets }, "saved");
   });
   listen(find("[data-cancel]"), "click", closeForm);
+  keepLineBreaksOnPaste(field("body"), listen);
   listen(form, "submit", (event) => {
     event.preventDefault();
     const previous = editing;

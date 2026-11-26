@@ -1,5 +1,6 @@
 import { language, newTemplateId, templateList, watchSettings } from "../shared/library.mjs";
 import { findComposer, insertTemplate, selectionIn, submitTemplate } from "./composer.mjs";
+import { keepLineBreaksOnPaste } from "../shared/paste.mjs";
 
 const copy = {
   zh: {
@@ -314,6 +315,7 @@ export function mount(root, api) {
   listen(add, "click", () => openEditor());
   listen(form.querySelector("[data-cancel]"), "click", () => returnToPicker(editing ? search : add));
   listen(form, "submit", saveTemplate);
+  keepLineBreaksOnPaste(field("body"), listen);
   listen(root, "keydown", (event) => {
     if (!open || event.isComposing) return;
     if (event.key === "Escape") {
