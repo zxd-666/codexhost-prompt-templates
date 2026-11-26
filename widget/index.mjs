@@ -1,10 +1,11 @@
-import { language, newTemplateId, templateList, watchSettings } from "../shared/library.mjs";
+import { language, newTemplateId, templateList, templateTags, watchSettings } from "../shared/library.mjs";
 import { findComposer, insertTemplate, selectionIn, submitTemplate } from "./composer.mjs";
 import { keepLineBreaksOnPaste } from "../shared/paste.mjs";
 
 const copy = {
   zh: {
     label: "提示词模板", search: "搜索提示词", empty: "没有匹配的模板", loading: "正在读取模板…",
+    allTags: "全部", tagFilters: "按标签筛选",
     loadError: "模板读取失败", insertError: "插入失败，请确认输入框可编辑。",
     create: "新建模板", name: "名称", tags: "标签（可选）", body: "提示词正文", tagsHint: "多个标签用逗号分隔",
     save: "保存", saving: "保存中…", cancel: "取消", created: "模板已创建",
@@ -16,6 +17,7 @@ const copy = {
   },
   en: {
     label: "Prompt templates", search: "Search prompts", empty: "No matching templates", loading: "Loading templates…",
+    allTags: "All", tagFilters: "Filter by tag",
     loadError: "Could not load templates", insertError: "Could not insert. Make sure the composer is editable.",
     create: "New template", name: "Name", tags: "Tags (optional)", body: "Prompt text", tagsHint: "Separate multiple tags with commas",
     save: "Save", saving: "Saving…", cancel: "Cancel", created: "Template created",
@@ -42,6 +44,7 @@ export function mount(root, api) {
           <input type="search" autocomplete="off">
           <button class="pt-new" type="button" aria-controls="pt-create"><span aria-hidden="true">+</span></button>
         </div>
+        <div class="pt-tag-row" role="group" hidden></div>
         <p class="pt-message" role="status"></p>
         <ul class="pt-results"></ul>
       </div>
@@ -62,6 +65,7 @@ export function mount(root, api) {
   const picker = root.querySelector(".pt-picker");
   const add = root.querySelector(".pt-new");
   const search = root.querySelector('input[type="search"]');
+  const tagRow = root.querySelector(".pt-tag-row");
   const message = root.querySelector(".pt-message");
   const results = root.querySelector("ul");
   const form = root.querySelector(".pt-create");
@@ -80,6 +84,7 @@ export function mount(root, api) {
   let saving = false;
   let sending = false;
   let pendingTemplate;
+  let activeTag = "";
   let notice = "";
   let formError = "";
   let frame = 0;
@@ -177,6 +182,35 @@ export function mount(root, api) {
     return control;
   }
 
+  function tagButton(key, label) {
+    const control = doc.createElement("button");
+    control.type = "button";
+    control.className = "pt-tag";
+    control.dataset.tag = key;
+    control.textContent = label;
+    control.title = label;
+    control.setAttribute("aria-pressed", String(key === activeTag));
+    return control;
+  }
+
+  // The tag row lists every tag in the visible library, so it stays stable while the user types a search.
+  function renderTags() {
+    const tags = new Map();
+    for (const template of settings ? templateList(settings, api.locale) : []) {
+      for (const { key, label } of templateTags(template.tags)) {
+        if (!tags.has(key)) tags.set(key, label);
+      }
+    }
+    if (!tags.has(activeTag)) activeTag = "";
+    const focused = tagRow.querySelector("button:focus")?.dataset.tag;
+    const sorted = [...tags].sort((a, b) => a[1].localeCompare(b[1], language(api.locale)));
+    const controls = tags.size ? [tagButton("", t("allTags")), ...sorted.map(([key, label]) => tagButton(key, label))] : [];
+    tagRow.hidden = !tags.size;
+    tagRow.setAttribute("aria-label", t("tagFilters"));
+    tagRow.replaceChildren(...controls);
+    if (focused !== undefined) (controls.find((control) => control.dataset.tag === focused) ?? controls[0])?.focus();
+  }
+
   function render() {
     trigger.title = t("label");
     trigger.setAttribute("aria-label", t("label"));
@@ -195,7 +229,8 @@ export function mount(root, api) {
     picker.hidden = formOpen;
     form.hidden = !formOpen;
     if (!open || formOpen) return;
-    const templates = settings ? templateList(settings, api.locale, search.value) : [];
+    renderTags();
+    const templates = settings ? templateList(settings, api.locale, search.value, activeTag) : [];
     message.textContent = notice ? t(notice) : settings ? (templates.length ? "" : t("empty")) : t(settingsError ? "loadError" : "loading");
     results.replaceChildren();
     for (const template of templates) {
@@ -300,11 +335,14 @@ export function mount(root, api) {
     open = true;
     notice = "";
     search.value = "";
-    results.scrollTop = 0;
+    activeTag = "";
     trigger.setAttribute("aria-expanded", "true");
     positionMenu();
     render();
     menu.showPopover();
+    // Scroll positions only apply once the popover is displayed.
+    tagRow.scrollLeft = 0;
+    results.scrollTop = 0;
     if (win.matchMedia("(pointer: fine)").matches) search.focus({ preventScroll: true });
   });
   listen(search, "input", () => {
@@ -312,6 +350,20 @@ export function mount(root, api) {
     results.scrollTop = 0;
     render();
   });
+  listen(tagRow, "click", (event) => {
+    const control = event.target.closest("[data-tag]");
+    if (!control) return;
+    activeTag = control.dataset.tag;
+    notice = "";
+    results.scrollTop = 0;
+    render();
+  });
+  // A mouse wheel only scrolls vertically, so map it onto the horizontal tag row.
+  listen(tagRow, "wheel", (event) => {
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || tagRow.scrollWidth <= tagRow.clientWidth) return;
+    event.preventDefault();
+    tagRow.scrollLeft += event.deltaY;
+  }, { passive: false });
   listen(add, "click", () => openEditor());
   listen(form.querySelector("[data-cancel]"), "click", () => returnToPicker(editing ? search : add));
   listen(form, "submit", saveTemplate);

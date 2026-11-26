@@ -92,6 +92,36 @@
   outline-offset: -2px;
 }
 .pt-message, .pt-form-message { color: var(--cx-page-text-muted, GrayText); margin: 10px 4px 2px; }
+.pt-tag-row {
+  display: flex;
+  gap: 4px;
+  flex: none;
+  margin-top: 6px;
+  overflow: auto hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.pt-tag-row::-webkit-scrollbar { display: none; }
+.pt-menu .pt-tag {
+  flex: none;
+  max-width: 120px;
+  padding: 1px 8px;
+  overflow: hidden;
+  border: 1px solid var(--cx-page-border, GrayText);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--cx-page-text-muted, GrayText);
+  font: 11px/18px system-ui, sans-serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pt-menu .pt-tag:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.pt-menu .pt-tag[aria-pressed="true"] {
+  border-color: var(--cx-page-accent, Highlight);
+  background: color-mix(in srgb, var(--cx-page-accent, Highlight) 10%, transparent);
+  color: var(--cx-page-accent, Highlight);
+}
 .pt-message:empty, .pt-form-message:empty { display: none; }
 .pt-create {
   display: grid;
@@ -156,4 +186,5 @@
   .pt-trigger { width: 40px; height: 40px; }
   .pt-menu :is(input, textarea) { font-size: 16px; }
   .pt-results .pt-result-action { width: 34px; height: 34px; }
+  .pt-menu .pt-tag { padding: 4px 10px; font-size: 12px; }
 }
