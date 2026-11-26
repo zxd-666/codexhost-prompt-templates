@@ -34,12 +34,13 @@
 
 ## 打包
 
-在包含 `manifest.json` 的源码目录运行以下命令。修改清单中的版本号后，使用对应版本的新 ZIP 文件名。
+在包含 `manifest.json` 的源码目录运行以下命令。修改清单中的版本号后，使用对应版本的新 ZIP 文件名。ZIP 输出到 `releases/`，该目录不纳入 git。
 
 ```sh
 version=$(node -p 'require("./manifest.json").version')
-zip -rX "../prompt-templates-${version}.zip" manifest.json page widget shared assets backend
-unzip -t "../prompt-templates-${version}.zip"
+mkdir -p releases
+zip -rX "releases/prompt-templates-${version}.zip" manifest.json page widget shared assets backend
+unzip -t "releases/prompt-templates-${version}.zip"
 ```
 
 `manifest.json` 位于 ZIP 根。`page/index.mjs` 与 `widget/index.mjs` 分别导出 `mount(root, api)`，各自跨端复用，通过相对导入共享模板逻辑。挂件根据两端原生输入框的 DOM 标记定位，在可编辑的聊天输入框左侧工具组中占位。
