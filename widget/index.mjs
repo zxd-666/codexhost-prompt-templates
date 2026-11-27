@@ -1,29 +1,32 @@
 import { language, newTemplateId, templateList, templateTags, watchSettings } from "../shared/library.mjs";
 import { findComposer, insertTemplate, selectionIn, submitTemplate } from "./composer.mjs";
 import { keepLineBreaksOnPaste } from "../shared/paste.mjs";
+import { icon } from "../shared/icons.mjs";
 
 const copy = {
   zh: {
-    label: "提示词模板", search: "搜索提示词", empty: "没有匹配的模板", loading: "正在读取模板…",
+    label: "提示词模板", search: "搜索提示词", empty: "没有找到“{query}”，换个关键词试试", emptyTag: "这个标签下没有模板",
+    emptyLibrary: "还没有模板，点 ＋ 新建第一条", loading: "正在读取模板…",
     allTags: "全部", tagFilters: "按标签筛选",
-    loadError: "模板读取失败", insertError: "插入失败，请确认输入框可编辑。",
+    loadError: "模板没能读出来，请关闭弹窗后重新打开。", insertError: "插入失败，请点一下输入框后再试。",
     create: "新建模板", name: "名称", tags: "标签（可选）", body: "提示词正文", tagsHint: "多个标签用逗号分隔",
-    save: "保存", saving: "保存中…", cancel: "取消", created: "模板已创建",
-    required: "请填写名称和正文。", saveError: "保存失败，请重试。",
+    save: "保存", cancel: "取消", created: "已新建模板",
+    required: "请填写名称和正文。", saveError: "保存失败，请检查 Host 连接后重试。",
     edit: "编辑模板", insert: "插入输入框", send: "直接发送", copy: "另存内置模板", saveCopy: "另存为模板",
-    updated: "模板已更新", editConflict: "该模板已在其他位置修改，请重新打开后编辑。",
+    updated: "已保存模板", editConflict: "这条模板已在其他端修改，请重新打开后再编辑。",
     draftPresent: "输入框里有草稿或附件，请先处理再直接发送。",
     sendBusy: "对话正在生成，请稍后直接发送。", sendFallback: "请检查输入框内容，再使用发送按钮。",
   },
   en: {
-    label: "Prompt templates", search: "Search prompts", empty: "No matching templates", loading: "Loading templates…",
+    label: "Prompt templates", search: "Search prompts", empty: "Nothing matches “{query}”. Try another keyword.", emptyTag: "No templates with this tag",
+    emptyLibrary: "No templates yet. Use + to create one.", loading: "Loading templates…",
     allTags: "All", tagFilters: "Filter by tag",
-    loadError: "Could not load templates", insertError: "Could not insert. Make sure the composer is editable.",
+    loadError: "Templates did not load. Close this menu and open it again.", insertError: "Could not insert. Click the composer and try again.",
     create: "New template", name: "Name", tags: "Tags (optional)", body: "Prompt text", tagsHint: "Separate multiple tags with commas",
-    save: "Save", saving: "Saving…", cancel: "Cancel", created: "Template created",
-    required: "Enter a name and prompt text.", saveError: "Could not save. Please try again.",
+    save: "Save", cancel: "Cancel", created: "Template created",
+    required: "Enter a name and prompt text.", saveError: "Could not save. Check the Host connection and try again.",
     edit: "Edit template", insert: "Insert into composer", send: "Send directly", copy: "Copy built-in template", saveCopy: "Save as template",
-    updated: "Template updated", editConflict: "This template changed elsewhere. Reopen it before editing.",
+    updated: "Template saved", editConflict: "This template changed elsewhere. Reopen it before editing.",
     draftPresent: "Finish or clear the current draft and attachments before sending directly.",
     sendBusy: "The chat is generating a response. Try again shortly.", sendFallback: "Review the composer before using its Send button.",
   },
@@ -35,14 +38,14 @@ export function mount(root, api) {
   const host = root.getRootNode().host;
   const events = new AbortController();
   const listen = (node, type, handler, options = {}) => node.addEventListener(type, handler, { ...options, signal: events.signal });
-  const t = (key) => copy[language(api.locale)][key];
+  const t = (key, values = {}) => copy[language(api.locale)][key].replace(/\{(\w+)\}/g, (match, name) => values[name] ?? match);
   root.innerHTML = `
-    <button class="pt-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="pt-menu"><span aria-hidden="true" class="pt-icon"></span></button>
+    <button class="pt-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="pt-menu">${icon("template")}</button>
     <section id="pt-menu" class="pt-menu" role="dialog" popover="manual">
       <div class="pt-picker">
         <div class="pt-picker-bar">
           <input type="search" autocomplete="off">
-          <button class="pt-new" type="button" aria-controls="pt-create"><span aria-hidden="true">+</span></button>
+          <button class="pt-new" type="button" aria-controls="pt-create">${icon("plus")}</button>
         </div>
         <div class="pt-tag-row" role="group" hidden></div>
         <p class="pt-message" role="status"></p>
@@ -55,7 +58,7 @@ export function mount(root, api) {
         <label><span data-copy="body"></span><textarea name="body" rows="3" maxlength="20000" required></textarea></label>
         <p class="pt-form-message" role="status"></p>
         <div class="pt-form-actions">
-          <button type="submit"></button>
+          <button type="submit">${icon("loader")}<span></span></button>
           <button type="button" data-cancel data-copy="cancel"></button>
         </div>
       </form>
@@ -71,6 +74,7 @@ export function mount(root, api) {
   const form = root.querySelector(".pt-create");
   const field = (name) => form.elements.namedItem(name);
   const save = form.querySelector('[type="submit"]');
+  const saveLabel = save.querySelector("span");
   const formMessage = form.querySelector(".pt-form-message");
   const formCopy = form.querySelectorAll("[data-copy]");
   const formTitle = form.querySelector("h2");
@@ -169,12 +173,12 @@ export function mount(root, api) {
     }
   }
 
-  function resultAction(template, action, symbol, perform) {
+  function resultAction(template, action, glyph, perform) {
     const control = doc.createElement("button");
     control.type = "button";
     control.className = "pt-result-action";
     control.dataset.action = action;
-    control.textContent = symbol;
+    control.innerHTML = icon(glyph);
     control.title = t(action);
     control.setAttribute("aria-label", `${t(action)} ${template.title}`);
     control.disabled = sending;
@@ -224,14 +228,17 @@ export function mount(root, api) {
     formTitle.textContent = t(editing?.preset ? "copy" : editing ? "edit" : "create");
     for (const element of formCopy) element.textContent = t(element.dataset.copy);
     for (const control of form.elements) control.disabled = saving;
-    save.textContent = t(saving ? "saving" : editing?.preset ? "saveCopy" : "save");
+    // While saving, the button keeps its label and shows a spinner.
+    saveLabel.textContent = t(editing?.preset ? "saveCopy" : "save");
+    save.setAttribute("aria-busy", String(saving));
+    menu.dataset.scheme = api.colorScheme === "dark" ? "dark" : "light";
     formMessage.textContent = formError ? t(formError) : "";
     picker.hidden = formOpen;
     form.hidden = !formOpen;
     if (!open || formOpen) return;
     renderTags();
     const templates = settings ? templateList(settings, api.locale, search.value, activeTag) : [];
-    message.textContent = notice ? t(notice) : settings ? (templates.length ? "" : t("empty")) : t(settingsError ? "loadError" : "loading");
+    message.textContent = notice ? t(notice) : settings ? (templates.length ? "" : emptyMessage()) : t(settingsError ? "loadError" : "loading");
     results.replaceChildren();
     for (const template of templates) {
       const li = doc.createElement("li");
@@ -244,12 +251,18 @@ export function mount(root, api) {
       item.addEventListener("click", () => useTemplate(template));
       li.append(
         item,
-        resultAction(template, "edit", "✎", () => openEditor(template)),
-        resultAction(template, "insert", "↳", () => useTemplate(template)),
-        resultAction(template, "send", "↑", () => void sendFromPicker(template)),
+        resultAction(template, "edit", "pencil", () => openEditor(template)),
+        resultAction(template, "insert", "insert", () => useTemplate(template)),
+        resultAction(template, "send", "send", () => void sendFromPicker(template)),
       );
       results.append(li);
     }
+  }
+
+  function emptyMessage() {
+    const query = search.value.trim();
+    if (query) return t("empty", { query });
+    return activeTag ? t("emptyTag") : t("emptyLibrary");
   }
 
   function openEditor(template) {
@@ -382,6 +395,16 @@ export function mount(root, api) {
       return;
     }
     if (formOpen && event.key === "Enter" && form.contains(event.target)) event.stopPropagation();
+    // Up and Down move between result rows; Up from the first row returns to search.
+    const titles = [...results.querySelectorAll(".pt-result-title:enabled")];
+    const row = titles.indexOf(event.target.closest?.(".pt-result-title"));
+    if (row >= 0 && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      event.preventDefault();
+      event.stopPropagation();
+      const next = event.key === "ArrowDown" ? titles[row + 1] : row ? titles[row - 1] : search;
+      next?.focus();
+      return;
+    }
     if (event.target !== search) return;
     const first = results.querySelector(".pt-result-title");
     if (first && (event.key === "ArrowDown" || event.key === "Enter")) {
@@ -408,6 +431,7 @@ export function mount(root, api) {
   observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["contenteditable", "hidden", "inert", "aria-hidden"] });
   const stopSettings = watchSettings(api, (value) => { settings = value; render(); }, () => { settingsError = true; render(); });
   const stopLocale = api.onLocaleChange(render);
+  const stopScheme = api.onColorSchemeChange?.(render);
   render();
   align();
 
@@ -417,6 +441,7 @@ export function mount(root, api) {
     win.cancelAnimationFrame(frame);
     stopSettings();
     stopLocale();
+    stopScheme?.();
     closeMenu();
     root.replaceChildren();
     host.removeAttribute("data-pt-docked");

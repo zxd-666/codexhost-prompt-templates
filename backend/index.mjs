@@ -46,8 +46,11 @@ export function activate(ctx) {
           return true;
         }
         case "save": {
-          const { template, previous } = request;
-          if (!validTemplate(template)) throw new Error("Invalid template");
+          const { previous } = request;
+          if (!validTemplate(request.template)) throw new Error("Invalid template");
+          // Store only the known fields, whatever else the client sent.
+          const { id, title, tags, body } = request.template;
+          const template = { id, title, tags, body };
           const templates = customTemplates(settings);
           const existing = templates.find(({ id }) => id === template.id);
           if (matches(existing, template)) return true;
@@ -70,6 +73,20 @@ export function activate(ctx) {
             values.templateOrder = settings.templateOrder.filter((id) => id !== previous.id);
           }
           await ctx.writeSettings(values);
+          return true;
+        }
+        case "restore": {
+          // Undo for a deletion: put the template back at the slot it held in the ordered list.
+          const { template, index } = request;
+          if (!validTemplate(template) || !Number.isInteger(index) || index < 0 || index > 100000) {
+            throw new Error("Invalid template");
+          }
+          const templates = customTemplates(settings);
+          if (templates.some(({ id }) => id === template.id)) return false;
+          const templateOrder = orderedTemplates(settings, "en").map(({ id }) => id);
+          templateOrder.splice(Math.min(index, templateOrder.length), 0, template.id);
+          const { id, title, tags, body } = template;
+          await ctx.writeSettings({ ...settings, templates: [{ id, title, tags, body }, ...templates], templateOrder });
           return true;
         }
         case "import": {

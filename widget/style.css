@@ -26,22 +26,12 @@
   background: var(--cx-page-surface, Canvas);
   color: var(--cx-page-text, CanvasText);
 }
-.pt-icon {
-  width: 13px;
-  height: 15px;
-  display: inline-grid;
-  align-content: center;
-  justify-items: center;
-  gap: 3px;
-  border: 1.5px solid currentColor;
-  border-radius: 3px;
-}
-.pt-icon::before, .pt-icon::after {
-  content: "";
-  width: 6px;
-  height: 1px;
-  background: currentColor;
-}
+/* Icons match the host composer toolbar: 14px line icons with a 1.4px stroke. */
+.pt-svg { display: block; width: 14px; height: 14px; flex: none; stroke-width: 1.4; }
+.pt-new .pt-svg { width: 16px; height: 16px; }
+.pt-form-actions [aria-busy="false"] .pt-svg { display: none; }
+.pt-form-actions [aria-busy="true"] .pt-svg { animation: pt-spin 1s linear infinite; }
+@keyframes pt-spin { to { transform: rotate(360deg); } }
 .pt-menu {
   position: fixed;
   inset: var(--pt-top, auto) auto var(--pt-bottom, auto) var(--pt-left, 8px);
@@ -55,10 +45,13 @@
   border-radius: var(--cx-page-radius, 12px);
   background: var(--cx-page-bg, Canvas);
   color: var(--cx-page-text, CanvasText);
-  box-shadow: 0 12px 35px #0003;
-  font: 13px/1.45 system-ui, sans-serif;
+  box-shadow: 0 8px 24px rgb(0 0 0 / .12), 0 2px 6px rgb(0 0 0 / .06);
+  /* Font family follows the host page, which the shadow host inherits from. */
+  font-size: 13px;
+  line-height: 1.45;
   text-align: start;
 }
+.pt-menu[data-scheme="dark"] { box-shadow: 0 8px 24px rgb(0 0 0 / .5); }
 .pt-menu:popover-open { display: flex; flex-direction: column; }
 .pt-menu [hidden] { display: none !important; }
 .pt-picker { display: flex; flex-direction: column; min-height: 0; }
@@ -84,7 +77,8 @@
   cursor: pointer;
   font: inherit;
 }
-.pt-new { display: grid; place-items: center; padding: 0; font-size: 21px; line-height: 1; }
+.pt-new { display: grid; place-items: center; padding: 0; color: var(--cx-page-text-muted, GrayText); }
+.pt-new:hover:not(:disabled) { color: var(--cx-page-text, CanvasText); }
 .pt-new:hover:not(:disabled), .pt-form-actions button:hover:not(:disabled) { background: var(--cx-page-surface, Canvas); }
 .pt-menu button:disabled { opacity: .55; cursor: default; }
 .pt-trigger:focus-visible, .pt-menu :is(button, input, textarea):focus-visible {
@@ -111,7 +105,8 @@
   border-radius: 999px;
   background: transparent;
   color: var(--cx-page-text-muted, GrayText);
-  font: 11px/18px system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
@@ -135,7 +130,7 @@
 .pt-create label { display: grid; gap: 3px; }
 .pt-form-message { margin: 0; color: var(--cx-page-danger, GrayText); }
 .pt-form-actions { display: flex; gap: 6px; }
-.pt-form-actions button { min-height: 32px; padding: 4px 12px; }
+.pt-form-actions button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 12px; }
 .pt-form-actions button[type="submit"] { border-color: var(--cx-page-accent, Highlight); color: var(--cx-page-accent, Highlight); }
 .pt-results {
   min-height: 0;
@@ -175,16 +170,17 @@
   height: 28px;
   padding: 0;
   color: var(--cx-page-text-muted, GrayText);
-  font-size: 16px;
-  line-height: 1;
 }
 .pt-results .pt-result-action[data-action="send"] { color: var(--cx-page-accent, Highlight); }
 .pt-results .pt-result-action:hover, .pt-results .pt-result-action:focus-visible {
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
+@media (prefers-reduced-motion: reduce) {
+  .pt-form-actions [aria-busy="true"] .pt-svg { animation: none; }
+}
 @media (pointer: coarse) {
   .pt-trigger { width: 40px; height: 40px; }
   .pt-menu :is(input, textarea) { font-size: 16px; }
   .pt-results .pt-result-action { width: 34px; height: 34px; }
-  .pt-menu .pt-tag { padding: 4px 10px; font-size: 12px; }
+  .pt-menu .pt-tag { padding: 4px 10px; }
 }
