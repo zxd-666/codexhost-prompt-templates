@@ -1,7 +1,7 @@
 {
   "manifestVersion": 2,
   "id": "prompt-templates",
-  "version": "1.6.0",
+  "version": "1.8.0",
   "author": "zxd-666",
   "repository": "https://github.com/zxd-666/codexhost-prompt-templates",
   "name": {
@@ -13,8 +13,8 @@
     "zh-CN": "在对话输入框左下角搜索常用提示词，一键插入草稿。"
   },
   "details": {
-    "en": "### Reuse prompts in chat\n\n- Click **Prompt templates** in the bottom-left toolbar to search and insert a template. Use **+** beside search to create a template in place, or tap a tag below search to show only that tag. Each result has actions to edit, insert, or send directly when the composer is empty.\n- Click a tag in the management page to filter templates, or drag templates to change their order in the picker. Create, edit, or delete custom templates and toggle built-ins.\n- Export custom templates to an Excel `.xlsx` file, or import templates from one. Duplicate rows are skipped.\n- Desktop and Web share the same library when connected to the same Host.",
-    "zh-CN": "### 在对话中复用提示词\n\n- 点击输入框左下角的 **提示词模板**，搜索并插入模板。也可点搜索框右侧的 **＋** 原地新建模板，或点搜索框下方的标签只看该标签的模板。列表每条模板可编辑、插入或在输入框为空时直接发送。\n- 在管理页点击标签可筛选模板，拖拽模板可调整弹窗里的顺序。也可新增、编辑、删除自定义模板或隐藏内置模板。\n- 可将自定义模板导出为 Excel（`.xlsx`），也可从 Excel 批量导入，重复的行会自动跳过。\n- 连接同一 Host 的 Desktop 和 Web 共享模板库。"
+    "en": "### Reuse prompts in chat\n\n- Click **Prompt templates** in the bottom-left toolbar to search and insert a template. Use **+** beside search to create a template in place, or tap a tag below search to show only that tag. Each result has actions to edit, insert, or send directly when the composer is empty. Use the Up and Down keys to move through the list.\n- Click a tag in the management page to filter templates, or drag templates to change their order in the picker. Create and edit templates in a dialog, undo a deletion from the notice that follows, or hide built-ins.\n- Export custom templates to an Excel `.xlsx` file, or import templates from one. Duplicate rows are skipped.\n- Desktop and Web share the same library when connected to the same Host.",
+    "zh-CN": "### 在对话中复用提示词\n\n- 点击输入框左下角的 **提示词模板**，搜索并插入模板。也可点搜索框右侧的 **＋** 原地新建模板，或点搜索框下方的标签只看该标签的模板。列表每条模板可编辑、插入或在输入框为空时直接发送，上下方向键可在列表里移动。\n- 在管理页点击标签可筛选模板，拖拽模板可调整弹窗里的顺序。新增和编辑在弹窗里完成，删除后可在提示里撤销。也可隐藏内置模板。\n- 可将自定义模板导出为 Excel（`.xlsx`），也可从 Excel 批量导入，重复的行会自动跳过。\n- 连接同一 Host 的 Desktop 和 Web 共享模板库。"
   },
   "categories": [
     "workflow",
